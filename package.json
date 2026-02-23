@@ -13,18 +13,26 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.0",
     "@nuxt/eslint": "1.15.1",
+    "@nuxt/icon": "2.2.1",
+    "drizzle-orm": "^0.45.1",
     "eslint-plugin-format": "^1.4.0",
     "nuxt": "^4.3.1",
     "vue": "^3.5.28",
-    "vue-router": "^4.6.4"
+    "vue-router": "^4.6.4",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^7.4.3",
+    "@tailwindcss/postcss": "^4.2.0",
+    "daisyui": "^5.5.19",
+    "drizzle-kit": "^0.31.9",
     "eslint": "^10.0.1",
     "eslint-plugin-node": "^11.1.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7"
+    "lint-staged": "^16.2.7",
+    "tailwindcss": "^4.2.0"
   },
   "lint-staged": {
     "*": "pnpm lint"
