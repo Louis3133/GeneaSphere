@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "concurrently \"pnpm run dev:db\" \"nuxt dev\"",
+    "dev:db": "turso dev --db-file local.db",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -16,9 +17,13 @@
     "@libsql/client": "^0.17.0",
     "@nuxt/eslint": "1.15.1",
     "@nuxt/icon": "2.2.1",
+    "@pinia/nuxt": "0.11.3",
+    "better-auth": "^1.4.19",
+    "concurrently": "^9.2.1",
     "drizzle-orm": "^0.45.1",
     "eslint-plugin-format": "^1.4.0",
     "nuxt": "^4.3.1",
+    "pinia": "^3.0.4",
     "vue": "^3.5.28",
     "vue-router": "^4.6.4",
     "zod": "^4.3.6"
@@ -32,7 +37,8 @@
     "eslint-plugin-node": "^11.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "tailwindcss": "^4.2.0"
+    "tailwindcss": "^4.2.0",
+    "typescript": "^5.9.3"
   },
   "lint-staged": {
     "*": "pnpm lint"
