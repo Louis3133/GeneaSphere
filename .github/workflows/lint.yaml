@@ -23,6 +23,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+        env:
+          TURSO_DATABASE_URL: file:local.db
+          TURSO_AUTH_TOKEN: dummy_token
+          BETTER_AUTH_SECRET: dummy_secret
+          BETTER_AUTH_URL: http://localhost:3000
+          GITHUB_CLIENT_ID: dummy_id
+          GITHUB_CLIENT_SECRET: dummy_secret
 
       - name: Run lint
         run: pnpm lint
