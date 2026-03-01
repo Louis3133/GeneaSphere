@@ -56,7 +56,7 @@ async function deleteMember(id: number) {
         <div v-for="member in membersList" :key="member.id" class="collapse collapse-arrow bg-base-100 border border-base-300" @click="memberData = member">
           <input type="radio" name="my-accordion-2" checked="checked">
           <button @click.stop="deleteMember(member.id)">
-            <Icon name="tabler:trash" size="12" />
+            <Icon name="tabler:trash" size="32" />
           </button>
           <div class="collapse-title font-semibold">
             {{ member.name }}
