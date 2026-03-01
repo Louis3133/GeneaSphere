@@ -14,13 +14,18 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "3d-force-graph": "^1.79.1",
     "@libsql/client": "^0.17.0",
     "@nuxt/eslint": "1.15.1",
     "@nuxt/icon": "2.2.1",
+    "@nuxtjs/color-mode": "4.0.0",
     "@pinia/nuxt": "0.11.3",
+    "@vee-validate/nuxt": "^4.15.1",
+    "@vee-validate/zod": "^4.15.1",
     "better-auth": "^1.4.19",
     "concurrently": "^9.2.1",
     "drizzle-orm": "^0.45.1",
+    "drizzle-zod": "^0.8.3",
     "eslint-plugin-format": "^1.4.0",
     "nuxt": "^4.3.1",
     "pinia": "^3.0.4",
@@ -31,12 +36,14 @@
   "devDependencies": {
     "@antfu/eslint-config": "^7.4.3",
     "@tailwindcss/postcss": "^4.2.0",
+    "@types/three": "^0.183.1",
     "daisyui": "^5.5.19",
     "drizzle-kit": "^0.31.9",
     "eslint": "^10.0.1",
     "eslint-plugin-node": "^11.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
+    "sass-embedded": "^1.97.3",
     "tailwindcss": "^4.2.0",
     "typescript": "^5.9.3"
   },

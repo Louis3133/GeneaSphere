@@ -1,0 +1,1 @@
+ALTER TABLE `threes` ADD `slug` text NOT NULL;

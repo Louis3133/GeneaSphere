@@ -8,6 +8,27 @@
       "when": 1771879254844,
       "tag": "0000_sturdy_blink",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1772116842572,
+      "tag": "0001_melted_the_spike",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772181900030,
+      "tag": "0002_mixed_cannonball",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1772191610147,
+      "tag": "0003_nostalgic_unus",
+      "breakpoints": true
     }
   ]
 }

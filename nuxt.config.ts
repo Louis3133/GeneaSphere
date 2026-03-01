@@ -7,12 +7,17 @@ export default defineNuxtConfig({
     "@nuxt/eslint",
     "@nuxt/icon",
     "@pinia/nuxt",
+    "@vee-validate/nuxt",
+    "@nuxtjs/color-mode",
   ],
   css: ["~/assets/css/main.css"],
   eslint: {
     config: {
       standalone: false,
     },
+  },
+  colorMode: {
+    dataValue: "theme",
   },
   postcss: {
     plugins: {
