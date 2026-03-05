@@ -58,8 +58,12 @@
 }
 
 h1 {
-  font-size: 48px;
+  font-size: 32px;
   font-weight: 500;
+
+  @media (min-width: 998px) {
+    font-size: 48px;
+  }
 }
 
 h2 {
@@ -71,8 +75,12 @@ h2 {
 .text-section {
   display: flex;
   flex-direction: column;
-  font-size: 18px;
+  font-size: 14px;
   gap: 24px;
+
+  @media (min-width: 998px) {
+    font-size: 18px;
+  }
 
   a {
     text-decoration: underline;

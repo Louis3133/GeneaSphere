@@ -1,52 +1,10 @@
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
-
-const graphContainer = ref<HTMLElement | null>(null);
-const drawer = ref<HTMLInputElement | null>(null);
-
-onMounted(async () => {
-  if (import.meta.client) {
-    const ForceGraph3D = (await import("3d-force-graph")).default;
-
-    // Données minimales pour le test
-    const data = {
-      nodes: [{ id: "Parent" }, { id: "Enfant" }, { id: "Grand-pere" }, { id: "Grand-mere" }, { id: "femme" }],
-      links: [{ source: "femme", target: "Parent" }, { source: "Parent", target: "Enfant" }, { source: "Grand-pere", target: "Parent" }, { source: "Grand-mere", target: "Parent" }],
-    };
-
-    if (graphContainer.value) {
-      ForceGraph3D()(graphContainer.value)
-        .graphData(data)
-        .nodeLabel("id")
-        .showNavInfo(false)
-        .width(1000)
-        .height(400)
-        .linkWidth(5)
-        .linkDirectionalParticles(5)
-        .linkDirectionalParticleSpeed(0.001)
-        .enableNodeDrag(false)
-        .onNodeClick(() => {
-          if (drawer.value) {
-            drawer.value.checked = true;
-          }
-        })
-        .backgroundColor("#ffffff00");
-    }
-  }
-});
 </script>
 
 <template>
-  <div>
+  <div class="index-contain">
     <div class="main-title">
       <div class="title-suptitle">
-        <span class="text-rotate">
-          <span class="justify-items-center">
-            <span>🌳 Créer vos racines </span>
-            <span>🤝️ Collaborez</span>
-            <span>👀 Visualisez</span>
-          </span>
-        </span>
         <h1>Visualisez vos racines généalogiques </h1>
       </div>
       <p class="main-subtitle">
@@ -54,50 +12,44 @@ onMounted(async () => {
       </p>
       <div class="main-buttons">
         <NuxtLink to="/dashboard/add" class="btn btn-complete btn-neutral">
-          Créer une graine
+          Créer une racine
         </NuxtLink>
         <NuxtLink to="/trufo" class="btn btn-neutral btn-outline">
-          Trouver une graine
+          Trouver une racine
         </NuxtLink>
       </div>
     </div>
-    <div ref="graphContainer" class="test-3d-container" />
-    <div class="drawer drawer-end">
-      <input
-        id="my-drawer-5"
-        ref="drawer"
-        type="checkbox"
-        class="drawer-toggle"
-      >
 
-      <div class="drawer-content" />
-
-      <div class="drawer-side">
-        <label for="my-drawer-5" class="drawer-overlay" />
-        <ul class="menu bg-base-200 min-h-full w-80 p-4">
-          <li><a>Sidebar Item 1</a></li>
-          <li><a>Sidebar Item 2</a></li>
-        </ul>
-      </div>
-    </div>
+    <div class="video-container" />
   </div>
 </template>
 
 <style lang="scss" scoped>
 h1 {
-  text-align: center;
-  font-size: 76px;
+  text-align: left;
+  font-size: 40px;
   font-style: normal;
   font-weight: 900;
   line-height: normal;
   letter-spacing: -1.5px;
   margin: unset;
+
+  @media (min-width: 578px) {
+    font-size: 48px;
+  }
+
+  @media (min-width: 998px) {
+    font-size: 55px;
+  }
 }
 
 .title-suptitle {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.video-container {
 }
 
 .main-buttons {
@@ -114,11 +66,29 @@ h1 {
 .main-title {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: start;
   gap: 36px;
-  margin-top: 164px;
-  max-width: 955px;
-  margin-inline: auto;
+  margin-left: 5%;
+  margin-top: 90px;
+  max-width: 850px;
+  margin-right: auto;
+  margin-bottom: 20%;
+
+  @media (min-width: 578px) {
+    margin-top: 124px;
+  }
+
+  @media (min-width: 998px) {
+    margin-top: 164px;
+  }
+}
+
+.video-container {
+  border-radius: 24px 0 0 24px;
+  height: 400px;
+  width: 60%;
+  border: 1px solid black;
+  margin-bottom: 5%;
 }
 
 .text-rotate {
@@ -136,16 +106,32 @@ h1 {
   }
 }
 
+.index-contain {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 100px;
+  align-items: center;
+}
+
 .btn-complete {
   color: white;
 }
 
 .main-subtitle {
-  text-align: center;
-  font-size: 32px;
+  text-align: left;
+  font-size: 18px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
   letter-spacing: -1.5px;
+
+  @media (min-width: 578px) {
+    font-size: 24px;
+  }
+
+  @media (min-width: 998px) {
+    font-size: 32px;
+  }
 }
 </style>

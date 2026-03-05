@@ -9,34 +9,39 @@ export default defineEventHandler(async (event) => {
   });
 
   if (!session?.user) {
-    return sendError(event, createError({
+    throw createError({
       statusCode: 401,
       statusMessage: "Unauthorized",
-    }));
+    });
   }
 
   const id = Number(getRouterParam(event, "id"));
-
   const result = await readValidatedBody(event, InsertMembers.safeParse);
 
   if (!result.success) {
-    const statusMessage = result.error.issues.map(issue => `${issue.path.join("")}: ${issue.message}`).join("; ");
     const data = result.error.issues.reduce((errors, issue) => {
       errors[issue.path.join("")] = issue.message;
       return errors;
     }, {} as Record<string, string>);
 
-    return sendError(event, createError({
+    throw createError({
       statusCode: 422,
-      statusMessage,
+      statusMessage: "Validation Failed",
       data,
-    }));
+    });
   }
 
   const [updated] = await db.update(members)
     .set(result.data)
     .where(eq(members.id, id))
     .returning();
+
+  if (!updated) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: "Member not found",
+    });
+  }
 
   return updated;
 });

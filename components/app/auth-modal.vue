@@ -5,7 +5,6 @@ import AppAuthButtonGoogle from "~/components/app/auth-button-google.vue";
 
 <template>
   <div>
-    <!-- Open the modal using ID.showModal() method -->
     <button class="btn button-modal" onclick="my_modal_2.showModal()">
       Se connecter
     </button>

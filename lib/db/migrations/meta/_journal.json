@@ -29,6 +29,27 @@
       "when": 1772191610147,
       "tag": "0003_nostalgic_unus",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1772392245624,
+      "tag": "0004_classy_puppet_master",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1772527161771,
+      "tag": "0005_fresh_night_nurse",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1772568208479,
+      "tag": "0006_broken_karma",
+      "breakpoints": true
     }
   ]
 }

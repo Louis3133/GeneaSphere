@@ -9,10 +9,10 @@ export default defineEventHandler(async (event) => {
   });
 
   if (!session?.user) {
-    return sendError(event, createError({
+    throw createError({
       statusCode: 401,
       statusMessage: "Unauthorized",
-    }));
+    });
   }
 
   const id = Number(getRouterParam(event, "id"));
@@ -20,6 +20,13 @@ export default defineEventHandler(async (event) => {
   const [deleted] = await db.delete(members)
     .where(eq(members.id, id))
     .returning();
+
+  if (!deleted) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: "Member not found",
+    });
+  }
 
   return deleted;
 });

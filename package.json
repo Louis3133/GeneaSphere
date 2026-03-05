@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "3d-force-graph": "^1.79.1",
+    "@dgreenheck/ez-tree": "^1.1.0",
     "@libsql/client": "^0.17.0",
     "@nuxt/eslint": "1.15.1",
     "@nuxt/icon": "2.2.1",
@@ -29,6 +30,7 @@
     "eslint-plugin-format": "^1.4.0",
     "nuxt": "^4.3.1",
     "pinia": "^3.0.4",
+    "three": "^0.183.2",
     "vue": "^3.5.28",
     "vue-router": "^4.6.4",
     "zod": "^4.3.6"
@@ -36,15 +38,21 @@
   "devDependencies": {
     "@antfu/eslint-config": "^7.4.3",
     "@tailwindcss/postcss": "^4.2.0",
+    "@types/jest": "^30.0.0",
+    "@types/supertest": "^7.2.0",
     "@types/three": "^0.183.1",
     "daisyui": "^5.5.19",
+    "dotenv": "^17.3.1",
     "drizzle-kit": "^0.31.9",
     "eslint": "^10.0.1",
     "eslint-plugin-node": "^11.1.0",
     "husky": "^9.1.7",
+    "jest": "^30.2.0",
     "lint-staged": "^16.2.7",
     "sass-embedded": "^1.97.3",
+    "supertest": "^7.2.2",
     "tailwindcss": "^4.2.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"
   },
   "lint-staged": {

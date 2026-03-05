@@ -10,6 +10,7 @@ const EnvSchema = z.object({
   GITHUB_CLIENT_SECRET: z.string(),
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
+  TEST_SESSION_COOKIE: z.string(),
 });
 
 export type EnvSchema = z.infer<typeof EnvSchema>;

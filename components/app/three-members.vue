@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { FetchError } from "ofetch";
 import { toTypedSchema } from "@vee-validate/zod";
 import { InsertMembers } from "~/lib/db/schema";
 
@@ -8,10 +7,8 @@ const props = defineProps<{
   memberData?: any | null;
 }>();
 const emit = defineEmits(["next", "memberAdded", "memberUpdated", "cancelEdit"]);
-const submitError = ref("");
-const loading = ref(false);
 
-const { handleSubmit, errors, meta, setErrors, setValues, resetForm } = useForm({
+const { handleSubmit, errors, meta, setValues, resetForm } = useForm({
   validationSchema: toTypedSchema(InsertMembers.omit({ threesId: true })),
 });
 
@@ -31,56 +28,13 @@ watch(() => props.memberData, (newMembersData) => {
   }
 });
 
-const onSubmit = handleSubmit(async (values, actions) => {
-  if (props.memberData) {
-    try {
-      submitError.value = "";
-      loading.value = true;
-      const inserted = await $fetch(`/api/members/${props.memberData.id}`, {
-        method: "put",
-        body: {
-          ...values,
-          threesId: props.threesId,
-        },
-      });
-      emit("memberUpdated", inserted);
-      actions.resetForm();
-    }
-    catch (e) {
-      const error = e as FetchError;
-
-      if (error.data?.data) {
-        setErrors(error.data.data);
-      }
-
-      submitError.value = error.statusMessage || "Erreur inconnue";
-    }
-  }
-  else {
-    try {
-      submitError.value = "";
-      loading.value = true;
-      const inserted = await $fetch("/api/members", {
-        method: "post",
-        body: {
-          ...values,
-          threesId: props.threesId,
-        },
-      });
-      emit("memberAdded", inserted);
-      actions.resetForm();
-    }
-    catch (e) {
-      const error = e as FetchError;
-
-      if (error.data?.data) {
-        setErrors(error.data.data);
-      }
-
-      submitError.value = error.statusMessage || "Erreur inconnue";
-    }
-  }
-  loading.value = false;
+const onSubmit = handleSubmit((values) => {
+  const tempMember = {
+    ...values,
+    id: Date.now(),
+  };
+  emit("memberAdded", tempMember);
+  resetForm();
 });
 
 onBeforeRouteLeave(() => {
@@ -103,8 +57,8 @@ onBeforeRouteLeave(() => {
       <AppFormField type="textarea" name="description" label="Description" :error="errors.description" />
       <AppFormField type="date" name="bornDate" label="Date de naissance" :error="errors.bornDate" />
       <AppFormField type="date" name="deathDate" label="Date de décès" :error="errors.deathDate" />
-      <div class="flex gap-2 justify-end">
-        <button type="button" class="btn btn-outline" @click="handleCancel">
+      <div class="flex gap-2">
+        <button v-if="props.memberData" type="button" class="btn btn-outline" @click="handleCancel">
           Cancel
           <Icon name="tabler:arrow-left" size="12" />
         </button>
@@ -119,13 +73,36 @@ onBeforeRouteLeave(() => {
         </button>
       </div>
     </form>
-    <button class="btn btn-primary" @click="emit('next', { step: 3 })">
-      Continuer
-      <Icon name="tabler:arrow-right" size="12" />
-    </button>
+    <div class="buttons-form flex justify-end gap-4">
+      <button class="btn btn-outline" @click="emit('next', { step: 1, three: props.threesId })">
+        <Icon name="tabler:arrow-left" size="12" />
+        Retour
+      </button>
+
+      <button class="btn btn-primary" @click="emit('next', { step: 3, three: props.threesId })">
+        Continuer
+        <Icon name="tabler:arrow-right" size="12" />
+      </button>
+    </div>
   </section>
 </template>
 
 <style scoped lang="scss">
+h1 {
+  font-weight: 600;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
 
+.buttons-form {
+  margin-top: 32px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-bottom: 1px solid #7e7e7e;
+  padding-bottom: 32px;
+}
 </style>

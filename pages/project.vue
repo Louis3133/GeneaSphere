@@ -5,13 +5,13 @@
   <section class="container project-section">
     <h1>Le projet</h1>
     <div class="text-section">
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
+      <p>Le projet GeneaSphere est un projet étudiant réalisé en 3 semaines, ce dernier avais pour objectif de nous introduire aux tests unitaires, à typescript et apprendre une nouvelle techno. Nous pouvions partir sur NextJS, j'ai choisi Nuxt, étant plus à l'aise avec Vue. Durnat ce projet j'ai pris la décision d'utiliser le moins possible l'IA, afin de favoriser une montée en compétence sur les technos, en utilisant excliusivement les ressources en ligne (documentations formations vidéos), j'ai utilisé l'IA pour avoir des pistes de réflexions ou dans les dernier jours pour débugger et résoudre des features par manque de temps. </p>
+      <p>Le brief consistait en la création d'un arbre généalogique en ligne. Nous avions carte blanche pour le type de représentation que nous allions faire (graphe, arbre), et pour la modélisation de ce dernier. j'ai donc décidé de partir sur de la 3D, voulant m'introduire a la techno ThreeJS (le nom semble raccord avec le projet). Le principe est donc le suivant : vous pouvez mettre en ligne (en privé ou en public) un arbre généalogique, ce dernier se présente sous la forme de racines avec son arbre au dessus !</p>
 
       <h2>Crédits</h2>
 
-      <p>Ce projet à été encadré par M. Salmon dans le cadre du BUT MMI à l'IUT Bordeaux Montaigne. Le développement et la conception du site à été effecté par Louis Le Doussal, étudiant de troisième année</p>
-      <p>Je remercie la chaine youtube<a target="_blank" href="https://www.youtube.com/watch?v=DK93dqmJJYg&t=10227s">Syntax</a>, plus particulièrement CJ Reynolds pour son excellente formation qui m'as permis de prendre en main le projet et d'apprendre un grand nombre de notions ❤️ </p>
+      <p>Ce projet à été encadré par M. Salmon dans le cadre du BUT MMI à l'IUT Bordeaux Montaigne. Le développement et la conception du site à été effecté par Louis Le Doussal, étudiant de troisième année.</p>
+      <p>Je remercie la chaine youtube <a target="_blank" href="https://www.youtube.com/watch?v=DK93dqmJJYg&t=10227s">Syntax</a>, plus particulièrement CJ Reynolds pour son excellente formation qui m'as permis de prendre en main le projet et d'apprendre un grand nombre de notions ❤️ </p>
 
       <h2>Nota Bene</h2>
 
@@ -32,8 +32,12 @@
 }
 
 h1 {
-  font-size: 48px;
+  font-size: 32px;
   font-weight: 500;
+
+  @media (min-width: 998px) {
+    font-size: 48px;
+  }
 }
 
 h2 {
@@ -45,8 +49,12 @@ h2 {
 .text-section {
   display: flex;
   flex-direction: column;
-  font-size: 18px;
+  font-size: 14px;
   gap: 24px;
+
+  @media (min-width: 998px) {
+    font-size: 18px;
+  }
 
   a {
     text-decoration: underline;

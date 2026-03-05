@@ -9,6 +9,5 @@ onMounted(() => {
 <template>
   <div>
     <span v-if="authStore.loading" class="loading loading-spinner loading-xl" />
-    Yeah
   </div>
 </template>

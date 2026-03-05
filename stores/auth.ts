@@ -14,7 +14,7 @@ export const useAuthStore = defineStore("useAuthStore", () => {
   async function signIn(providerName: string) {
     await authClient.signIn.social({
       provider: providerName,
-      callbackURL: "/dashboard",
+      callbackURL: "/dashboard/profil",
       errorCallbackURL: "/error",
     });
   }

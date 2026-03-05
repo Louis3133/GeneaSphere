@@ -9,7 +9,7 @@ export const threes = sqliteTable("threes", {
   slug: text().notNull(),
   description: text().notNull(),
   isPublic: int({ mode: "boolean" }).notNull(),
-  userId: int().notNull().references(() => user.id),
+  userId: text().notNull().references(() => user.id),
 });
 
 export const InsertThrees = createInsertSchema(threes, {

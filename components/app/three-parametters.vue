@@ -1,36 +1,39 @@
 <script setup lang="ts">
-import type { FetchError } from "ofetch";
 import { toTypedSchema } from "@vee-validate/zod";
 import { InsertThrees } from "~/lib/db/schema";
 
+const props = defineProps<{
+  treeData: any | null;
+}>();
 const emit = defineEmits(["next"]);
 const router = useRouter();
 const submitError = ref("");
 const loading = ref(false);
-const { handleSubmit, errors, meta, setErrors } = useForm({
+const { handleSubmit, errors, meta, setValues } = useForm({
   validationSchema: toTypedSchema(InsertThrees),
 });
 
+watch(() => props.treeData, (newData) => {
+  if (newData) {
+    setValues({
+      name: newData.name,
+      description: newData.description,
+      isPublic: newData.isPublic,
+    });
+  }
+}, { immediate: true });
+
 const onSubmit = handleSubmit(async (values) => {
   try {
-    submitError.value = "";
     loading.value = true;
-    const inserted = await $fetch("/api/threes", {
-      method: "post",
-      body: values,
+    emit("next", {
+      step: 2,
+      formData: values,
     });
-    emit("next", { step: 2, three: inserted.id });
   }
-  catch (e) {
-    const error = e as FetchError;
-
-    if (error.data?.data) {
-      setErrors(error.data.data);
-    }
-
-    submitError.value = error.statusMessage || "Erreur inconnue";
+  finally {
+    loading.value = false;
   }
-  loading.value = false;
 });
 
 onBeforeRouteLeave(() => {
@@ -58,13 +61,13 @@ onBeforeRouteLeave(() => {
       <AppFormField :disabled="loading" name="name" label="Nom" :error="errors.name" />
       <AppFormField :disabled="loading" type="textarea" name="description" label="Description" :error="errors.description" />
       <AppFormField :disabled="loading" type="checkbox" name="isPublic" label="Arbre accessible au public ?" :error="errors.isPublic" />
-      <div class="flex gap-2 justify-end">
+      <div class="flex buttons-form gap-2 justify-end">
         <button :disabled="loading" type="button" class="btn btn-outline" @click="router.back()">
-          Cancel
+          Annuler
           <Icon name="tabler:arrow-left" size="12" />
         </button>
         <button :disabled="loading" type="submit" class="btn btn-primary">
-          Add
+          Continuer
           <Icon name="tabler:circle-plus-filled" size="12" />
         </button>
       </div>
@@ -73,5 +76,19 @@ onBeforeRouteLeave(() => {
 </template>
 
 <style scoped lang="scss">
+h1 {
+  font-weight: 600;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
 
+.buttons-form {
+  margin-top: 32px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 </style>
