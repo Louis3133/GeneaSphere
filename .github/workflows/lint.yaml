@@ -32,6 +32,7 @@ jobs:
           GITHUB_CLIENT_SECRET: dummy_secret
           GOOGLE_CLIENT_ID: dummy_id
           GOOGLE_CLIENT_SECRET: dummy_secret
+          TEST_SESSION_COOKIE: dummy_cookie
 
       - name: Run lint
         run: pnpm lint

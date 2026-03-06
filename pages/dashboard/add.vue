@@ -82,7 +82,6 @@ const graphData = computed(() => {
 function handleLiveRelations(newRelations) {
   newRelations.forEach((relation) => {
     const memberExist = membersList.value.find(m => m.id === relation.id);
-
     if (memberExist) {
       memberExist.parent1 = relation.parent1;
       memberExist.parent2 = relation.parent2;
@@ -131,6 +130,7 @@ watch(step, async (newStep) => {
         .linkWidth(link => link.invisible ? 0 : 5)
         .linkDirectionalParticles(link => link.invisible ? 0 : 5)
         .showNavInfo(false)
+        .width(600)
         .height(400)
         .linkDirectionalParticleSpeed(0.001)
         .enableNodeDrag(false)
@@ -157,7 +157,8 @@ watch(graphData, async (newGraphData) => {
         <AppThreeRelations v-if="step === 3" :members-list="membersList" :tree-data="formData" @live-update="handleLiveRelations" @next="step = $event.step" />
       </div>
     </div>
-    <div class="flex-1">
+
+    <div class="right-panel">
       <div class="steps-container">
         <ul class="steps lg:steps-horizontal">
           <li class="step step-primary">
@@ -187,8 +188,8 @@ watch(graphData, async (newGraphData) => {
         </div>
       </div>
 
-      <div v-if="step === 3" class="previsualisation-box-2">
-        <div ref="graphContainer" class="test-3d-container" />
+      <div v-if="step === 3" class="previsualisation-box-3">
+        <div ref="graphContainer" />
       </div>
     </div>
   </div>
@@ -198,6 +199,16 @@ watch(graphData, async (newGraphData) => {
 [data-theme="dark"] {
   .sidebar-add {
     background: #1b232c !important;
+  }
+}
+
+.add-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  @media (min-width: 998px) {
+    flex-direction: row-reverse;
   }
 }
 
@@ -220,28 +231,33 @@ watch(graphData, async (newGraphData) => {
   }
 }
 
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.steps-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  flex-shrink: 0;
+  width: 100%;
+}
+
 .previsualisation-box {
   display: flex;
-  margin-left: 15%;
-  margin-top: 64px;
-  max-width: 80%;
   flex-direction: column;
   gap: 24px;
+  margin: 64px auto 0;
+  width: 70%;
 }
 
-.previsualisation-box-2 {
+.previsualisation-box-3 {
   display: flex;
-  margin-left: 15%;
+  justify-content: center;
   margin-top: 64px;
-  max-width: 80%;
-  flex-direction: column;
-  gap: 24px;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
 }
 
 .step {
@@ -252,26 +268,6 @@ h1 {
   font-size: 24px;
   font-weight: 500;
   margin-bottom: 32px;
-}
-
-.scene-container {
-  background: red;
-}
-
-.add-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-
-  @media (min-width: 998px) {
-    flex-direction: row-reverse;
-  }
-}
-
-.steps-container {
-  justify-content: center;
-  margin-top: 32px;
-  display: flex;
 }
 
 .collapse-title {

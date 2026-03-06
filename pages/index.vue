@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+const authStore = useAuthStore();
 </script>
 
 <template>
@@ -11,7 +12,7 @@
         Ou découvrez celles des autres
       </p>
       <div class="main-buttons">
-        <NuxtLink to="/dashboard/add" class="btn btn-complete btn-neutral">
+        <NuxtLink v-if="!authStore.loading && authStore.user" to="/dashboard/add" class="btn btn-complete btn-neutral">
           Créer une racine
         </NuxtLink>
         <NuxtLink to="/trufo" class="btn btn-neutral btn-outline">
@@ -19,15 +20,13 @@
         </NuxtLink>
       </div>
     </div>
-
-    <div class="video-container" />
   </div>
 </template>
 
 <style lang="scss" scoped>
 h1 {
-  text-align: left;
-  font-size: 40px;
+  text-align: center;
+  font-size: 48px;
   font-style: normal;
   font-weight: 900;
   line-height: normal;
@@ -35,11 +34,11 @@ h1 {
   margin: unset;
 
   @media (min-width: 578px) {
-    font-size: 48px;
+    font-size: 60px;
   }
 
   @media (min-width: 998px) {
-    font-size: 55px;
+    font-size: 76px;
   }
 }
 
@@ -47,9 +46,6 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.video-container {
 }
 
 .main-buttons {
@@ -66,12 +62,11 @@ h1 {
 .main-title {
   display: flex;
   flex-direction: column;
-  align-items: start;
+  align-items: center;
   gap: 36px;
-  margin-left: 5%;
   margin-top: 90px;
-  max-width: 850px;
-  margin-right: auto;
+  max-width: 950px;
+  margin-inline: auto;
   margin-bottom: 20%;
 
   @media (min-width: 578px) {

@@ -30,10 +30,10 @@ const authStore = useAuthStore();
             Navigation
           </p>
           <div class="footer-links-content">
-            <NuxtLink to="/project">
+            <NuxtLink v-if="!authStore.loading && authStore.user" to="/dashboard/add">
               Ajouter une racine
             </NuxtLink>
-            <NuxtLink to="/mentions-legales">
+            <NuxtLink to="/trufo">
               Voir les racines
             </NuxtLink>
           </div>
