@@ -11,7 +11,8 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:seed": "npx tsx server/scripts/seed.ts"
   },
   "dependencies": {
     "3d-force-graph": "^1.79.1",

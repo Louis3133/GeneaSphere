@@ -39,7 +39,6 @@ watch(treeData, (newData) => {
   }
 }, { immediate: true });
 
-// Identifie les membres racines (sans aucun parent)
 const rootMemberIds = computed(() => {
   return new Set(
     membersList.value
@@ -116,7 +115,6 @@ const graphData = computed(() => {
 let myGraphInstance: any = null;
 const orbitTarget = new THREE.Vector3(0, 0, 0);
 
-// ─── RNG déterministe par seed ────────────────────────────────────────────────
 function makeRng(seed: number) {
   return (n: number) => {
     const x = Math.sin(seed * 127.1 + n * 311.7) * 43758.5453;
@@ -124,12 +122,10 @@ function makeRng(seed: number) {
   };
 }
 
-// ─── Constantes d'épaisseur ───────────────────────────────────────────────────
-const BASE_RADIUS_MAIN = 2.8;
-const BASE_RADIUS_TIP = 0.35;
-const BASE_RADIUS_UNION = 0.5;
+const BASE_RADIUS_MAIN = 4.2;
+const BASE_RADIUS_TIP = 0.55;
+const BASE_RADIUS_UNION = 0.75;
 
-// ─── Niveau de branches adaptatif selon le nombre de membres ─────────────────
 function getTreeBranchLevels(memberCount: number): number {
   if (memberCount <= 10)
     return 1;
@@ -138,8 +134,14 @@ function getTreeBranchLevels(memberCount: number): number {
   return 3;
 }
 
-// ─── Construction d'une racine organique ──────────────────────────────────────
-function buildOrganicRoot(mesh: THREE.Mesh, start: THREE.Vector3, end: THREE.Vector3, isUnion: boolean, linkSeed: number, depthNorm: number) {
+function buildOrganicRoot(
+  mesh: THREE.Mesh,
+  start: THREE.Vector3,
+  end: THREE.Vector3,
+  isUnion: boolean,
+  linkSeed: number,
+  depthNorm: number,
+) {
   const length = new THREE.Vector3().subVectors(end, start).length();
   if (length < 0.5)
     return;
@@ -150,12 +152,11 @@ function buildOrganicRoot(mesh: THREE.Mesh, start: THREE.Vector3, end: THREE.Vec
   const radiusBase = isUnion
     ? BASE_RADIUS_UNION * (0.3 + t_thick * 0.7)
     : BASE_RADIUS_TIP + (BASE_RADIUS_MAIN - BASE_RADIUS_TIP) * t_thick;
-  const radiusTip = radiusBase * 0.35;
+  const radiusTip = radiusBase * 0.28;
   const radialSegs = isUnion ? 5 : 7;
 
   const numCtrl = Math.max(3, Math.floor(length / 10));
   const points: THREE.Vector3[] = [];
-
   for (let i = 0; i <= numCtrl; i++) {
     const t = i / numCtrl;
     const base = new THREE.Vector3().lerpVectors(start, end, t);
@@ -177,29 +178,47 @@ function buildOrganicRoot(mesh: THREE.Mesh, start: THREE.Vector3, end: THREE.Vec
     mesh.geometry.dispose();
   const tubeGeo = new THREE.TubeGeometry(path, segments, radiusBase, radialSegs, false);
 
-  // ── TAPER basé sur Y réel : haut=épais, bas=fin — toujours monotone ───────
-  const minY = Math.min(start.y, end.y);
-  const maxY = Math.max(start.y, end.y);
-  const yRange = Math.max(maxY - minY, 0.01);
-
   const pos = tubeGeo.attributes.position;
-  for (let seg = 0; seg <= segments; seg++) {
-    const cp = curvePoints[Math.min(seg, curvePoints.length - 1)];
-    const tY = Math.max(0, Math.min(1, (cp.y - minY) / yRange));
-    const taper = tY ** 0.55;
-    const r_at_seg = radiusTip + (radiusBase - radiusTip) * taper;
-    const scale = r_at_seg / radiusBase;
 
-    for (let r = 0; r < radialSegs; r++) {
-      const idx = seg * radialSegs + r;
-      if (idx >= pos.count)
-        continue;
-      const rx = pos.getX(idx) - cp.x;
-      const ry = pos.getY(idx) - cp.y;
-      const rz = pos.getZ(idx) - cp.z;
-      pos.setXYZ(idx, cp.x + rx * scale, cp.y + ry * scale, cp.z + rz * scale);
+  if (isUnion) {
+    for (let seg = 0; seg <= segments; seg++) {
+      const cp = curvePoints[Math.min(seg, curvePoints.length - 1)];
+      const tSeg = seg / segments;
+      const pulse = 1.0 + 0.08 * Math.sin(tSeg * Math.PI * 3 + rng(seg % 5) * Math.PI);
+      for (let r = 0; r < radialSegs; r++) {
+        const idx = seg * radialSegs + r;
+        if (idx >= pos.count)
+          continue;
+        const rx = pos.getX(idx) - cp.x;
+        const ry = pos.getY(idx) - cp.y;
+        const rz = pos.getZ(idx) - cp.z;
+        pos.setXYZ(idx, cp.x + rx * pulse, cp.y + ry * pulse, cp.z + rz * pulse);
+      }
     }
   }
+  else {
+    const topY = Math.max(start.y, end.y);
+    const bottomY = Math.min(start.y, end.y);
+    const yRange = Math.max(topY - bottomY, 0.01);
+
+    for (let seg = 0; seg <= segments; seg++) {
+      const cp = curvePoints[Math.min(seg, curvePoints.length - 1)];
+      const tY = Math.max(0, Math.min(1, (cp.y - bottomY) / yRange));
+      const taper = tY ** 0.5;
+      const scale = (radiusTip + (radiusBase - radiusTip) * taper) / radiusBase;
+
+      for (let r = 0; r < radialSegs; r++) {
+        const idx = seg * radialSegs + r;
+        if (idx >= pos.count)
+          continue;
+        const rx = pos.getX(idx) - cp.x;
+        const ry = pos.getY(idx) - cp.y;
+        const rz = pos.getZ(idx) - cp.z;
+        pos.setXYZ(idx, cp.x + rx * scale, cp.y + ry * scale, cp.z + rz * scale);
+      }
+    }
+  }
+
   pos.needsUpdate = true;
   tubeGeo.computeVertexNormals();
   mesh.geometry = tubeGeo;
@@ -225,13 +244,10 @@ function buildOrganicRoot(mesh: THREE.Mesh, start: THREE.Vector3, end: THREE.Vec
   mesh.quaternion.identity();
 }
 
-// ─── Connexion nœud racine → tronc de l'arbre ────────────────────────────────
 function buildTrunkConnection(scene: THREE.Scene, nodePos: THREE.Vector3, trunkBaseY: number, seed: number) {
   const rng = makeRng(seed);
-
   const minRise = 22;
   const actualTrunkY = Math.max(trunkBaseY, nodePos.y + minRise);
-
   const trunkBase = new THREE.Vector3(
     nodePos.x + (rng(0) - 0.5) * 8,
     actualTrunkY,
@@ -244,7 +260,6 @@ function buildTrunkConnection(scene: THREE.Scene, nodePos: THREE.Vector3, trunkB
 
   const numCtrl = Math.max(3, Math.floor(length / 10));
   const points: THREE.Vector3[] = [];
-
   for (let i = 0; i <= numCtrl; i++) {
     const t = i / numCtrl;
     const base = new THREE.Vector3().lerpVectors(nodePos, trunkBase, t);
@@ -268,19 +283,16 @@ function buildTrunkConnection(scene: THREE.Scene, nodePos: THREE.Vector3, trunkB
 
   const tubeGeo = new THREE.TubeGeometry(path, segments, radiusBase, radialSegs, false);
   const pos = tubeGeo.attributes.position;
-
-  const minY = Math.min(nodePos.y, actualTrunkY);
-  const maxY = Math.max(nodePos.y, actualTrunkY);
-  const yRange = Math.max(maxY - minY, 0.01);
+  const topY2 = Math.max(nodePos.y, actualTrunkY);
+  const bottomY2 = Math.min(nodePos.y, actualTrunkY);
+  const yRange2 = Math.max(topY2 - bottomY2, 0.01);
 
   for (let seg = 0; seg <= segments; seg++) {
     const cp = curvePoints[Math.min(seg, curvePoints.length - 1)];
-    const tY = Math.max(0, Math.min(1, (cp.y - minY) / yRange));
-    const taper = tY ** 0.55;
-    const r_at_seg = radiusTip + (radiusBase - radiusTip) * taper;
-    const scale = r_at_seg / radiusBase;
+    const tY = Math.max(0, Math.min(1, (cp.y - bottomY2) / yRange2));
+    const taper = tY ** 0.5;
+    const scale = (radiusTip + (radiusBase - radiusTip) * taper) / radiusBase;
     const knot = 1.0 + 0.04 * Math.sin(tY * Math.PI * 4 * rng(seg % 6));
-
     for (let r = 0; r < radialSegs; r++) {
       const idx = seg * radialSegs + r;
       if (idx >= pos.count)
@@ -289,123 +301,72 @@ function buildTrunkConnection(scene: THREE.Scene, nodePos: THREE.Vector3, trunkB
       const rx = pos.getX(idx) - cp2.x;
       const ry = pos.getY(idx) - cp2.y;
       const rz = pos.getZ(idx) - cp2.z;
-      const s = scale * knot;
-      pos.setXYZ(idx, cp2.x + rx * s, cp2.y + ry * s, cp2.z + rz * s);
+      pos.setXYZ(idx, cp2.x + rx * scale * knot, cp2.y + ry * scale * knot, cp2.z + rz * scale * knot);
     }
   }
   pos.needsUpdate = true;
   tubeGeo.computeVertexNormals();
 
   const hueShift = (rng(3) - 0.5) * 0.03;
-  const mat = new THREE.MeshStandardMaterial({
+  scene.add(new THREE.Mesh(tubeGeo, new THREE.MeshStandardMaterial({
     color: new THREE.Color(0.10 + hueShift, 0.05, 0.01),
     roughness: 0.92,
     metalness: 0.0,
-  });
-  scene.add(new THREE.Mesh(tubeGeo, mat));
+  })));
 }
 
 function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
 }
 
-// ─── Monticule de terre + herbe — taille dynamique selon l'étalement du graphe ──
-// graphSpread : rayon XZ maximal des nœuds du graphe (calculé depuis bbox)
 function addGroundMound(scene: THREE.Scene, baseY: number, graphSpread: number) {
-  // La motte doit couvrir tout l'étalement + une marge confortable
-  const margin = 30;
-  const spread = Math.max(50, graphSpread + margin); // minimum 50 pour les petits arbres
+  const spread = Math.max(40, graphSpread + 22);
 
-  // ── 1. Couche de terre (disque aplati) ────────────────────────────────────
-  const dirtInner = spread * 0.85;
-  const dirtOuter = spread * 1.0;
-  const dirtGeo = new THREE.CylinderGeometry(dirtInner, dirtOuter, 10, 48, 1);
-  const dirtMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(0.18, 0.10, 0.04),
-    roughness: 0.98,
-    metalness: 0.0,
-  });
-  const dirtMesh = new THREE.Mesh(dirtGeo, dirtMat);
+  const dirtMesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(spread * 0.85, spread * 1.0, 10, 48, 1),
+    new THREE.MeshStandardMaterial({ color: new THREE.Color(0.18, 0.10, 0.04), roughness: 0.98, metalness: 0.0 }),
+  );
   dirtMesh.position.set(0, baseY - 2, 0);
   scene.add(dirtMesh);
 
-  // ── 2. Monticule central (motte du tronc) — sphère aplatie ───────────────
-  // La motte centrale reste proportionnelle mais pas gigantesque
-  const motteRadius = Math.min(spread * 0.35, 60);
-  const motteGeo = new THREE.SphereGeometry(motteRadius, 32, 16);
-  const motteMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(0.22, 0.13, 0.05),
-    roughness: 0.97,
-    metalness: 0.0,
-  });
-  const motteMesh = new THREE.Mesh(motteGeo, motteMat);
-  motteMesh.scale.set(1, 0.22, 1); // très aplati
+  const motteMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(Math.min(spread * 0.35, 55), 32, 16),
+    new THREE.MeshStandardMaterial({ color: new THREE.Color(0.22, 0.13, 0.05), roughness: 0.97, metalness: 0.0 }),
+  );
+  motteMesh.scale.set(1, 0.22, 1);
   motteMesh.position.set(0, baseY + 0.5, 0);
   scene.add(motteMesh);
 
-  // ── 3. Couronne d'herbe autour — densité proportionnelle à l'étalement ───
-  const bladeW = 0.5;
-  const bladeH = 3.2;
-  const bladeGeo = new THREE.PlaneGeometry(bladeW, bladeH);
-  bladeGeo.translate(0, bladeH / 2, 0);
-
-  const grassMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(0.18, 0.32, 0.08),
-    roughness: 0.85,
-    metalness: 0.0,
-    side: THREE.DoubleSide,
-  });
-
+  const bladeGeo = new THREE.PlaneGeometry(0.5, 3.2);
+  bladeGeo.translate(0, 1.6, 0);
+  const grassMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.18, 0.32, 0.08), roughness: 0.85, metalness: 0.0, side: THREE.DoubleSide });
   const rng = makeRng(42);
-  // Plus le spread est grand, plus on met de brins (plafonné à 400 pour les perfs)
-  const numBlades = Math.min(400, Math.floor(180 * (spread / 50)));
-
+  const numBlades = Math.min(350, Math.floor(160 * (spread / 42)));
   for (let i = 0; i < numBlades; i++) {
     const angle = (i / numBlades) * Math.PI * 2 + rng(i) * 0.35;
     const ring = i % 3 === 0 ? 1.0 : (i % 3 === 1 ? 0.85 : 1.12);
-    // Répartit les brins sur toute la surface, de la motte jusqu'au bord
-    const minR = spread * 0.30;
-    const maxR = spread * 0.98;
-    const radius = (minR + rng(i * 7) * (maxR - minR)) * ring;
-    const x = Math.cos(angle) * radius;
-    const z = Math.sin(angle) * radius;
-
-    const distFromCenter = radius;
-    // Légère bosse vers le centre, s'aplatit vers les bords
-    const motteY = Math.max(0, 4 * Math.exp(-distFromCenter * distFromCenter / (spread * spread * 0.15)));
-
+    const radius = (spread * 0.28 + rng(i * 7) * spread * 0.68) * ring;
+    const motteY = Math.max(0, 4 * Math.exp(-(radius * radius) / (spread * spread * 0.12)));
     const blade = new THREE.Mesh(bladeGeo, grassMat);
-    blade.position.set(x, baseY + motteY - 0.5, z);
+    blade.position.set(Math.cos(angle) * radius, baseY + motteY - 0.5, Math.sin(angle) * radius);
     blade.rotation.y = angle + rng(i * 3) * Math.PI;
     blade.rotation.z = (rng(i * 5) - 0.5) * 0.4;
-    const scaleH = 0.6 + rng(i * 11) * 0.8;
-    blade.scale.set(0.8 + rng(i * 13) * 0.5, scaleH, 1);
+    blade.scale.set(0.8 + rng(i * 13) * 0.5, 0.6 + rng(i * 11) * 0.8, 1);
     scene.add(blade);
   }
 
-  // ── 4. Mottes de terre irrégulières — réparties sur tout le disque ────────
-  const bumpMat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(0.20, 0.11, 0.04),
-    roughness: 0.99,
-    metalness: 0.0,
-  });
-  const numBumps = Math.min(40, Math.floor(14 * (spread / 50)));
+  const bumpMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.20, 0.11, 0.04), roughness: 0.99, metalness: 0.0 });
+  const numBumps = Math.min(28, Math.floor(14 * (spread / 42)));
   for (let i = 0; i < numBumps; i++) {
     const angle = rng(i * 17) * Math.PI * 2;
-    const r = spread * 0.15 + rng(i * 23) * spread * 0.75;
-    const bumpGeo = new THREE.SphereGeometry(1.5 + rng(i * 31) * 2.5, 7, 5);
-    const bump = new THREE.Mesh(bumpGeo, bumpMat);
+    const r = spread * 0.12 + rng(i * 23) * spread * 0.78;
+    const bump = new THREE.Mesh(new THREE.SphereGeometry(1.5 + rng(i * 31) * 2.5, 7, 5), bumpMat);
     bump.scale.set(1 + rng(i) * 0.6, 0.35 + rng(i * 7) * 0.25, 1 + rng(i * 3) * 0.6);
-    bump.position.set(
-      Math.cos(angle) * r,
-      baseY + 1.5,
-      Math.sin(angle) * r,
-    );
+    bump.position.set(Math.cos(angle) * r, baseY + 1.5, Math.sin(angle) * r);
     scene.add(bump);
   }
 }
 
-// ─── Ajout de l'arbre avec niveau adaptatif ───────────────────────────────────
 async function addTree(scene: THREE.Scene, yOffset: number, memberCount: number, graphSpread: number) {
   const { Tree } = await import("@dgreenheck/ez-tree");
   const tree = new Tree();
@@ -421,8 +382,7 @@ async function addTree(scene: THREE.Scene, yOffset: number, memberCount: number,
     }
   });
   scene.add(tree);
-
-  addGroundMound(scene, yOffset - 1, graphSpread);
+  addGroundMound(scene, yOffset + 8, graphSpread);
 }
 
 function startAutoRotate() {
@@ -465,8 +425,8 @@ let linkCounter = 0;
 function computeDepthNorms(): Map<any, number> {
   const members = membersList.value;
   const depthMap = new Map<any, number>();
-
   const queue: Array<{ id: any; depth: number }> = [];
+
   for (const m of members) {
     if (!m.parent1 && !m.parent2) {
       queue.push({ id: m.id, depth: 0 });
@@ -487,9 +447,9 @@ function computeDepthNorms(): Map<any, number> {
   }
 
   const normMap = new Map<any, number>();
-  for (const [id, d] of depthMap) {
+  for (const [id, d] of depthMap)
     normMap.set(id, maxDepth > 0 ? 1.0 - d / maxDepth : 1.0);
-  }
+
   for (const m of members) {
     if (m.unions) {
       for (const u of m.unions) {
@@ -498,9 +458,7 @@ function computeDepthNorms(): Map<any, number> {
           const p2 = Math.max(m.id, u.partner);
           const uid = `union_${p1}_${p2}`;
           if (!normMap.has(uid)) {
-            const d1 = normMap.get(p1) ?? 0.5;
-            const d2 = normMap.get(p2) ?? 0.5;
-            normMap.set(uid, (d1 + d2) / 2);
+            normMap.set(uid, ((normMap.get(p1) ?? 0.5) + (normMap.get(p2) ?? 0.5)) / 2);
           }
         }
       }
@@ -510,6 +468,10 @@ function computeDepthNorms(): Map<any, number> {
 }
 
 let depthNormMap = new Map<any, number>();
+
+function isUnionNodeId(id: any): boolean {
+  return typeof id === "string" && id.startsWith("union_");
+}
 
 async function initGraph() {
   if (import.meta.client && graphContainer.value) {
@@ -544,9 +506,19 @@ async function initGraph() {
         const seed = linkCounter++;
         const srcId = typeof link.source === "object" ? link.source?.id : link.source;
         const tgtId = typeof link.target === "object" ? link.target?.id : link.target;
-        const dSrc = depthNormMap.get(srcId) ?? 0.5;
-        const dTgt = depthNormMap.get(tgtId) ?? 0.5;
-        const depthNorm = Math.max(dSrc, dTgt);
+
+        // Pour les liens union, on prend la depthNorm du membre (pas du nœud union)
+        let depthNorm: number;
+        if (link.isUnion) {
+          const memberNodeId = isUnionNodeId(srcId) ? tgtId : srcId;
+          depthNorm = depthNormMap.get(memberNodeId) ?? 0.5;
+        }
+        else {
+          const dSrc = depthNormMap.get(srcId) ?? 0.5;
+          const dTgt = depthNormMap.get(tgtId) ?? 0.5;
+          depthNorm = Math.max(dSrc, dTgt);
+        }
+
         const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({
           color: link.isUnion ? "#1a0d04" : "#120802",
           roughness: 0.92,
@@ -561,12 +533,10 @@ async function initGraph() {
       .linkPositionUpdate((obj: any, { start, end }: { start: any; end: any }) => {
         if (!obj || !start || !end)
           return false;
-        const s = new THREE.Vector3(start.x ?? 0, start.y ?? 0, start.z ?? 0);
-        const e = new THREE.Vector3(end.x ?? 0, end.y ?? 0, end.z ?? 0);
         buildOrganicRoot(
           obj as THREE.Mesh,
-          s,
-          e,
+          new THREE.Vector3(start.x ?? 0, start.y ?? 0, start.z ?? 0),
+          new THREE.Vector3(end.x ?? 0, end.y ?? 0, end.z ?? 0),
           !!(obj as any).__isUnion,
           (obj as any).__seed ?? 0,
           (obj as any).__depthNorm ?? 0.5,
@@ -578,18 +548,14 @@ async function initGraph() {
       .enableNavigationControls(false)
       .backgroundColor("#ffffff00")
       .dagMode("td")
-      .dagLevelDistance(24)
+      .dagLevelDistance(16)
       .onEngineStop(async () => {
         const scene = myGraphInstance.scene();
         const bbox = myGraphInstance.getGraphBbox();
-
         const topY = bbox?.y?.[1] ?? 80;
         const bottomY = bbox?.y?.[0] ?? -80;
         const totalHeight = (topY - bottomY) + 600;
 
-        // ── Calcul du rayon XZ réel du graphe ──────────────────────────────
-        // On mesure le max de sqrt(x²+z²) sur tous les nœuds pour avoir
-        // l'étalement horizontal exact, peu importe la forme du graphe.
         const allNodes = myGraphInstance.graphData().nodes;
         let maxXZ = 0;
         for (const node of allNodes) {
@@ -599,27 +565,29 @@ async function initGraph() {
           if (dist > maxXZ)
             maxXZ = dist;
         }
-        // graphSpread = rayon XZ max + taille d'un nœud (~6)
         const graphSpread = maxXZ + 6;
 
-        await addTree(scene, topY + 20, membersList.value.length, graphSpread);
+        // L'arbre est placé au-dessus du nœud le plus haut + marge
+        // La motte doit couvrir topY (le Y max des nœuds) + ~15 unités de marge
+        await addTree(scene, topY + 18, membersList.value.length, graphSpread);
 
-        const trunkBaseY = topY + 2;
+        const trunkBaseY = topY + 4;
         let rootSeedOffset = 500;
-
         for (const node of allNodes) {
           if (!(node as any).isRoot)
             continue;
-          const nx = (node as any).x ?? 0;
-          const ny = (node as any).y ?? 0;
-          const nz = (node as any).z ?? 0;
-          const nodePos = new THREE.Vector3(nx, ny, nz);
-          buildTrunkConnection(scene, nodePos, trunkBaseY, rootSeedOffset++);
+          buildTrunkConnection(
+            scene,
+            new THREE.Vector3((node as any).x ?? 0, (node as any).y ?? 0, (node as any).z ?? 0),
+            trunkBaseY,
+            rootSeedOffset++,
+          );
         }
 
         isLoading.value = false;
 
-        const centerY = (topY + bottomY) / 2;
+        const treeTopY = topY + 18 + 90;
+        const centerY = (treeTopY + bottomY) / 2;
         orbitTarget.set(0, centerY, 0);
 
         myGraphInstance.cameraPosition(
@@ -636,22 +604,22 @@ async function initGraph() {
         }
       });
 
+    const chargeForce = myGraphInstance.d3Force("charge");
+    if (chargeForce && typeof chargeForce.strength === "function") {
+      chargeForce.strength(-8);
+    }
+
     const scene = myGraphInstance.scene();
-
     scene.add(new THREE.AmbientLight(0xFFE8C8, 0.55));
-
     const sun = new THREE.DirectionalLight(0xFFF5E0, 1.8);
     sun.position.set(60, 120, 80);
     scene.add(sun);
-
     const skyFill = new THREE.DirectionalLight(0xC8E0FF, 0.35);
     skyFill.position.set(-80, 80, -60);
     scene.add(skyFill);
-
     const groundBounce = new THREE.DirectionalLight(0xA0622A, 0.28);
     groundBounce.position.set(0, -60, 0);
     scene.add(groundBounce);
-
     const pointWarm = new THREE.PointLight(0xFF9944, 0.65, 400);
     pointWarm.position.set(20, 30, 40);
     scene.add(pointWarm);
@@ -660,14 +628,12 @@ async function initGraph() {
     if (canvas) {
       let isDragging = false;
       let lastX = 0;
-
       canvas.addEventListener("mousedown", (e: MouseEvent) => {
         if (autoRotate.value)
           toggleAutoRotate();
         isDragging = true;
         lastX = e.clientX;
       });
-
       canvas.addEventListener("mousemove", (e: MouseEvent) => {
         if (!isDragging)
           return;
@@ -681,7 +647,6 @@ async function initGraph() {
         camera.position.copy(orbitTarget).add(offset);
         camera.lookAt(orbitTarget);
       });
-
       window.addEventListener("mouseup", () => {
         isDragging = false;
       });
@@ -690,24 +655,14 @@ async function initGraph() {
 }
 
 const numberMembers = computed(() => membersList.value.length);
-
-const numberAdoptedValue = computed(() => {
-  return membersList.value.filter(m => m.isAdopted === true).length;
-});
-
-const numberDeathValue = computed(() => {
-  return membersList.value.filter(m => isDead(m.deathDate)).length;
-});
-
+const numberAdoptedValue = computed(() => membersList.value.filter(m => m.isAdopted === true).length);
+const numberDeathValue = computed(() => membersList.value.filter(m => isDead(m.deathDate)).length);
 const percentAlive = computed(() => {
   const total = membersList.value.length;
   if (total === 0)
     return 0;
-
-  const aliveCount = total - numberDeathValue.value;
-  return Math.round((aliveCount / total) * 100);
+  return Math.round(((total - numberDeathValue.value) / total) * 100);
 });
-
 const mailtoLink = computed(() => {
   return `mailto:example@exemple.com?subject=Geneasphere&body=${encodeURIComponent(
     `Voici un super arbre généalogique à découvrir : ${pageLink.value}`,
